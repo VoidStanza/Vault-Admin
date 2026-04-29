@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAULT ADMIN | Add Story</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@300;400;600&family=Lora&display=swap');
+
+:root {
+  --gold: #d4af37;
+  --bg: #0a0a0b;
+  --surface: #0f0f10;
+  --border: rgba(212,175,55,0.2);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: #e2e2e2;
+  font-family: 'Montserrat', sans-serif;
+  min-height: 100vh;
+  padding: 3rem 2rem;
+}
+
+h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2rem; margin-bottom: 0.25rem; }
+.subtitle { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: #444; margin-bottom: 3rem; }
+
+.form-wrap { max-width: 860px; margin: 0 auto; }
+
+.field { margin-bottom: 1.75rem; }
+
+label { display: block; font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+
+.hint { font-size: 10px; color: #444; margin-bottom: 0.5rem; font-style: italic; }
+
+input, textarea, select {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: #e2e2e2;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+input:focus, textarea:focus { border-color: var(--gold); }
+
+textarea.story-input {
+  font-family: 'Lora', serif;
+  font-size: 14px;
+  line-height: 1.8;
+  min-height: 280px;
+}
+
+textarea.code-output {
+  font-family: monospace;
+  font-size: 12px;
+  min-height: 220px;
+  color: #aaa;
+  background: #080808;
+  border-color: rgba(255,255,255,0.05);
+}
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+
+.btn { font-family: 'Montserrat', sans-serif; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; border: none; cursor: pointer; padding: 14px 32px; transition: all 0.2s; }
+.btn-primary { background: var(--gold); color: #000; }
+.btn-primary:hover { background: #c9a227; }
+.btn-secondary { background: transparent; color: var(--gold); border: 1px solid var(--border); margin-left: 1rem; }
+.btn-secondary:hover { background: rgba(212,175,55,0.08); }
+.btn-copy { background: transparent; color: #888; border: 1px solid rgba(255,255,255,0.08); font-size: 9px; padding: 8px 20px; margin-top: 0.75rem; }
+.btn-copy:hover { color: var(--gold); border-color: var(--border); }
+.btn-copy.copied { color: #4caf50; border-color: #4caf50; }
+
+.divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 2.5rem 0; }
+
+.output-section { display: none; }
+.output-section.visible { display: block; }
+.output-label { font-size: 10px; color: #555; margin-bottom: 1rem; line-height: 1.6; }
+
+.success-msg { background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2); color: var(--gold); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px 20px; margin-bottom: 1.5rem; }
+
+.format-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+.fmt-btn { background: transparent; border: 1px solid rgba(255,255,255,0.08); color: #666; font-size: 10px; padding: 5px 12px; cursor: pointer; font-family: 'Montserrat', sans-serif; letter-spacing: 0.1em; transition: all 0.2s; }
+.fmt-btn:hover { color: var(--gold); border-color: var(--border); }
+
+/* ── MODE TOGGLE ── */
+.mode-tabs { display: flex; gap: 0; margin-bottom: 2rem; border: 1px solid var(--border); width: fit-content; }
+.mode-tab { padding: 10px 28px; font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase; cursor: pointer; background: transparent; color: #555; border: none; font-family: 'Montserrat', sans-serif; transition: all 0.2s; }
+.mode-tab.active { background: var(--gold); color: #000; }
+
+/* ── CHAPTERS ── */
+#chapters-container { display: none; }
+#chapters-container.visible { display: block; }
+
+.chapter-block {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #0c0c0d;
+  position: relative;
+}
+
+.chapter-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.chapter-num-label {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.remove-ch-btn {
+  background: none;
+  border: 1px solid rgba(255,0,0,0.2);
+  color: #666;
+  font-size: 9px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 0.2em;
+  transition: all 0.2s;
+}
+
+.remove-ch-btn:hover { color: #ff4444; border-color: rgba(255,0,0,0.5); }
+
+.add-ch-btn {
+  background: transparent;
+  border: 1px dashed rgba(212,175,55,0.3);
+  color: var(--gold);
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  cursor: pointer;
+  width: 100%;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.2s;
+  margin-bottom: 2rem;
+}
+
+.add-ch-btn:hover { background: rgba(212,175,55,0.05); border-style: solid; }
+
+.steps { display: flex; gap: 2rem; margin-bottom: 3rem; flex-wrap: wrap; }
+.step { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: #333; display: flex; align-items: center; gap: 0.5rem; }
+.step.active { color: var(--gold); }
+.step-num { width: 20px; height: 20px; border: 1px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="form-wrap">
+  <h1>Vault Admin</h1>
+  <p class="subtitle">Add a new record to the archive</p>
+
+  <div class="steps">
+    <div class="step active"><div class="step-num">1</div> Fill the form</div>
+    <div class="step"><div class="step-num">2</div> Generate code</div>
+    <div class="step"><div class="step-num">3</div> Paste into stories.js</div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div class="field">
+    <label>Entry Type</label>
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('story')">Single Story</button>
+      <button class="mode-tab" onclick="setMode('novella')">Novella (Chapters)</button>
+    </div>
+  </div>
+
+  <!-- METADATA -->
+  <div class="row">
+    <div class="field">
+      <label>Story ID</label>
+      <div class="hint">Next number after your last story</div>
+      <input type="number" id="storyId" placeholder="7" min="1">
+    </div>
+    <div class="field">
+      <label>Cover Image URL</label>
+      <div class="hint">Pinterest or any direct image link</div>
+      <input type="url" id="storyCover" placeholder="https://i.pinimg.com/...">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Title</label>
+    <input type="text" id="storyTitle" placeholder="e.g. The Unnamed Novella">
+  </div>
+
+  <div class="field">
+    <label>Synopsis <span style="color:#555;font-size:9px;">(shown in gallery)</span></label>
+    <input type="text" id="storySynopsis" placeholder="One line that draws them in">
+  </div>
+
+  <hr class="divider">
+
+  <!-- SINGLE STORY MODE -->
+  <div id="single-story-section">
+    <div class="field">
+      <label>Story Type</label>
+      <select id="storyType">
+        <option value="prose">Prose (standard paragraphs)</option>
+        <option value="script">Script / Screenplay</option>
+        <option value="poetic">Poetic / Mixed</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Your Story</label>
+      <div class="hint">Plain text — blank lines = new paragraph. No HTML needed.</div>
+      <div class="format-btns">
+        <button class="fmt-btn" onclick="insertQuote('storyText')">✦ Blockquote</button>
+        <button class="fmt-btn" onclick="insertDivider('storyText')">— Scene Break</button>
+        <button class="fmt-btn" onclick="clearText('storyText')">✕ Clear</button>
+      </div>
+      <textarea class="story-input" id="storyText" placeholder="Paste or write your story here..."></textarea>
+    </div>
+  </div>
+
+  <!-- NOVELLA MODE -->
+  <div id="chapters-container">
+    <div id="chapters-list"></div>
+    <button class="add-ch-btn" onclick="addChapter()">+ Add Chapter</button>
+  </div>
+
+  <!-- ACTIONS -->
+  <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.75rem;">
+    <button class="btn btn-primary" onclick="generateCode()">Generate Code →</button>
+    <button class="btn btn-secondary" onclick="previewStory()">Preview</button>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output-section" id="outputSection">
+    <hr class="divider">
+    <div class="success-msg">✦ Code generated — copy and paste into stories.js</div>
+    <div class="output-label">
+      Open <strong>stories.js</strong> on GitHub → Edit → find the last <code>}</code> before the closing <code>]</code> → add a comma after it → paste this block below → Commit.
+    </div>
+    <textarea class="code-output" id="codeOutput" readonly></textarea>
+    <button class="btn-copy btn" id="copyBtn" onclick="copyCode()">Copy to Clipboard</button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="previewBox" style="display:none; margin-top:2rem; border:1px solid var(--border); padding:2rem; background:var(--surface);">
+    <hr class="divider">
+    <p style="font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:#555;margin-bottom:1rem;">Preview</p>
+    <div id="previewTitle" style="font-family:'Playfair Display',serif;color:var(--gold);font-size:1.5rem;margin-bottom:0.5rem;"></div>
+    <div id="previewSynopsis" style="font-family:'Lora',serif;font-style:italic;color:#666;font-size:13px;margin-bottom:1.5rem;"></div>
+    <div id="previewText" style="font-family:'Lora',serif;color:#aaa;font-size:14px;line-height:1.9;"></div>
+  </div>
+</div>
+
+<script>
+  let currentMode = 'story';
+  let chapterCount = 0;
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && mode === 'story') || (i === 1 && mode === 'novella'));
+    });
+    document.getElementById('single-story-section').style.display = mode === 'story' ? 'block' : 'none';
+    document.getElementById('chapters-container').classList.toggle('visible', mode === 'novella');
+
+    if (mode === 'novella' && chapterCount === 0) addChapter();
+  }
+
+  function addChapter() {
+    chapterCount++;
+    const n = chapterCount;
+    const list = document.getElementById('chapters-list');
+    const div = document.createElement('div');
+    div.className = 'chapter-block';
+    div.id = 'ch-block-' + n;
+    div.innerHTML = `
+      <div class="chapter-block-header">
+        <span class="chapter-num-label">Chapter ${n}</span>
+        ${n > 1 ? `<button class="remove-ch-btn" onclick="removeChapter(${n})">Remove</button>` : ''}
+      </div>
+      <div class="field">
+        <label>Chapter Title</label>
+        <input type="text" id="ch-title-${n}" placeholder="e.g. The First Night">
+      </div>
+      <div class="field">
+        <label>Chapter Synopsis <span style="color:#555;font-size:9px;">(optional)</span></label>
+        <input type="text" id="ch-synopsis-${n}" placeholder="Optional — one line">
+      </div>
+      <div class="field">
+        <label>Chapter Text</label>
+        <div class="format-btns">
+          <button class="fmt-btn" onclick="insertQuote('ch-text-${n}')">✦ Blockquote</button>
+          <button class="fmt-btn" onclick="insertDivider('ch-text-${n}')">— Scene Break</button>
+        </div>
+        <textarea class="story-input" id="ch-text-${n}" placeholder="Write Chapter ${n} here..."></textarea>
+      </div>
+    `;
+    list.appendChild(div);
+  }
+
+  function removeChapter(n) {
+    const el = document.getElementById('ch-block-' + n);
+    if (el) el.remove();
+  }
+
+  // ── TEXT → HTML ──
+  function textToHtml(raw, type) {
+    if (!raw || !raw.trim()) return '';
+    const blocks = raw.split(/\n{2,}/);
+    return blocks.map(block => {
+      block = block.trim();
+      if (!block) return '';
+
+      if (block.startsWith('[QUOTE]') && block.endsWith('[/QUOTE]')) {
+        const inner = block.slice(7, -8).trim();
+        return `<blockquote class="border-l-2 border-[#d4af37] pl-4 py-2 my-8 italic text-[#d4af37]/80">${inner}</blockquote>`;
+      }
+
+      if (block === '[BREAK]') {
+        return `<div class="text-center text-[#d4af37]/40 my-8 tracking-widest">✦ ✦ ✦</div>`;
+      }
+
+      if (type === 'script') {
+        if (block.toUpperCase() === block && block.length < 80)
+          return `<p class="text-[#d4af37] font-bold tracking-widest uppercase mt-6">${block}</p>`;
+        if (block.startsWith('INT.') || block.startsWith('EXT.'))
+          return `<p class="text-gray-400 italic mt-4">${block}</p>`;
+        if (/^[A-Z\s]+:/.test(block)) {
+          const ci = block.indexOf(':');
+          return `<p class="mt-2"><span class="text-[#d4af37] uppercase font-bold">${block.slice(0,ci)}:</span> ${block.slice(ci+1).trim()}</p>`;
+        }
+      }
+
+      const lines = block.split('\n').filter(l => l.trim());
+      if (lines.length === 1) return `<p class="mb-6">${lines[0]}</p>`;
+      if (type === 'poetic') return lines.map((l,i) => `<p class="${i===0?'mt-4':'mt-1'}">${l}</p>`).join('\n    ');
+      return `<p class="mb-6">${lines.join('<br>')}</p>`;
+    }).join('\n    ');
+  }
+
+  // ── GENERATE ──
+  function generateCode() {
+    const id = document.getElementById('storyId').value.trim();
+    const title = document.getElementById('storyTitle').value.trim();
+    const synopsis = document.getElementById('storySynopsis').value.trim();
+    const cover = document.getElementById('storyCover').value.trim();
+
+    if (!id || !title || !synopsis) {
+      alert('Please fill in ID, Title, and Synopsis.');
+      return;
+    }
+
+    let code = '';
+
+    if (currentMode === 'story') {
+      const type = document.getElementById('storyType').value;
+      const html = textToHtml(document.getElementById('storyText').value, type);
+      code = `{
+    id: ${id},
+    title: "${title}",
+    synopsis: "${synopsis}",
+    cover: "${cover}",
+    text: \`<div class="reading-font text-gray-300">
+    ${html}
+</div>\`
+}`;
+
+    } else {
+      // Novella
+      const blocks = document.querySelectorAll('.chapter-block');
+      const chaptersCode = Array.from(blocks).map((block, i) => {
+        const n = block.id.replace('ch-block-', '');
+        const chTitle = (document.getElementById('ch-title-' + n)?.value || '').trim();
+        const chSyn = (document.getElementById('ch-synopsis-' + n)?.value || '').trim();
+        const chRaw = document.getElementById('ch-text-' + n)?.value || '';
+        const chHtml = textToHtml(chRaw, 'prose');
+        return `    {
+      number: ${i + 1},
+      title: "${chTitle || 'Chapter ' + (i+1)}",
+      synopsis: "${chSyn}",
+      text: \`<div class="reading-font text-gray-300">
+    ${chHtml}
+</div>\`
+    }`;
+      }).join(',\n');
+
+      code = `{
+    id: ${id},
+    type: "novella",
+    title: "${title}",
+    synopsis: "${synopsis}",
+    cover: "${cover}",
+    chapters: [
+${chaptersCode}
+    ]
+}`;
+    }
+
+    document.getElementById('codeOutput').value = code;
+    document.getElementById('outputSection').classList.add('visible');
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i <= 1));
+  }
+
+  // ── PREVIEW ──
+  function previewStory() {
+    const title = document.getElementById('storyTitle').value.trim() || 'Untitled';
+    const synopsis = document.getElementById('storySynopsis').value.trim() || '';
+    let html = '';
+
+    if (currentMode === 'story') {
+      html = textToHtml(document.getElementById('storyText').value,
+             document.getElementById('storyType').value);
+    } else {
+      const blocks = document.querySelectorAll('.chapter-block');
+      blocks.forEach((block, i) => {
+        const n = block.id.replace('ch-block-', '');
+        const chTitle = document.getElementById('ch-title-' + n)?.value || `Chapter ${i+1}`;
+        const chRaw = document.getElementById('ch-text-' + n)?.value || '';
+        html += `<p style="color:var(--gold);font-family:'Playfair Display',serif;font-size:1.1rem;margin:2rem 0 1rem;">
+          ${chTitle}</p>` + textToHtml(chRaw, 'prose');
+      });
+    }
+
+    document.getElementById('previewTitle').textContent = title;
+    document.getElementById('previewSynopsis').textContent = synopsis;
+    document.getElementById('previewText').innerHTML = html;
+    document.getElementById('previewBox').style.display = 'block';
+    document.getElementById('previewBox').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── COPY ──
+  function copyCode() {
+    const output = document.getElementById('codeOutput');
+    output.select();
+    document.execCommand('copy');
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    document.querySelectorAll('.step').forEach(s => s.classList.add('active'));
+    setTimeout(() => { btn.textContent = 'Copy to Clipboard'; btn.classList.remove('copied'); }, 2500);
+  }
+
+  // ── HELPERS ──
+  function insertQuote(id) {
+    const ta = document.getElementById(id);
+    const pos = ta.selectionStart;
+    const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+    ta.value = ta.value.slice(0, pos) + `\n\n[QUOTE]${sel || 'Your key line here'}[/QUOTE]\n\n` + ta.value.slice(ta.selectionEnd);
+    ta.focus();
+  }
+
+  function insertDivider(id) {
+    const ta = document.getElementById(id);
+    const pos = ta.selectionStart;
+    ta.value = ta.value.slice(0, pos) + '\n\n[BREAK]\n\n' + ta.value.slice(pos);
+    ta.focus();
+  }
+
+  function clearText(id) {
+    if (confirm('Clear this text?')) document.getElementById(id).value = '';
+  }
+</script>
+</body>
+</html>
